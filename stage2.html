@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Этап 2 — Архивный стол</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      color: #fff;
+      background:
+        radial-gradient(circle at 22% 28%, rgba(251, 191, 36, 0.14), transparent 46%),
+        radial-gradient(ellipse at 68% 52%, rgba(217, 119, 6, 0.12), rgba(20, 14, 10, 0.96) 66%, #080504 100%);
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      position: relative;
+    }
+
+    /* Тёмный архивный стол и плёночная перфорация по краям */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background-image:
+        linear-gradient(
+          90deg,
+          rgba(10, 7, 5, 0.92) 0px,
+          rgba(32, 21, 14, 0.8) 28px,
+          transparent 30px,
+          transparent calc(100% - 30px),
+          rgba(32, 21, 14, 0.8) calc(100% - 28px),
+          rgba(10, 7, 5, 0.92) 100%
+        ),
+        repeating-linear-gradient(
+          to bottom,
+          transparent 0px,
+          transparent 18px,
+          rgba(251, 191, 36, 0.24) 18px,
+          rgba(251, 191, 36, 0.24) 30px,
+          transparent 30px,
+          transparent 48px
+        );
+      background-size:
+        100% 100%,
+        10px 48px,
+        10px 48px;
+      background-repeat:
+        no-repeat,
+        repeat-y,
+        repeat-y;
+      background-position:
+        center center,
+        9px top,
+        calc(100% - 9px) top;
+      box-shadow: inset 0 0 95px rgba(0, 0, 0, 0.82);
+    }
+
+    /* Фоновый коллаж из архивных снимков на столе */
+    .collage-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .collage-tile {
+      position: absolute;
+      width: var(--w, clamp(104px, 19vw, 185px));
+      aspect-ratio: 4 / 3;
+      padding: 4px;
+      border-radius: 6px;
+      background: rgba(245, 235, 215, 0.28);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.72);
+      opacity: 0.28;
+      filter: blur(0.6px) sepia(0.28) contrast(0.96);
+      transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+    }
+
+    .collage-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+      display: block;
+    }
+
+    .stage2-layout {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .stage2-info {
+      width: 100%;
+      max-width: 420px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(24, 18, 14, 0.86);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(251, 191, 36, 0.24);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.65);
+    }
+
+    .stage2-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .found-counter {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.14);
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    p {
+      margin: 0 0 10px;
+      color: #e2e8f0;
+      font-size: 13.5px;
+      line-height: 1.4;
+    }
+
+    /* Крупный вертикальный кадр под фото и видео */
+    .archive-stage {
+      position: relative;
+      height: min(62dvh, 460px);
+      aspect-ratio: 3 / 4;
+      max-width: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #110d0b;
+      border: 2px solid rgba(245, 240, 230, 0.28);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.78);
+      flex-shrink: 0;
+    }
+
+    .archive-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px;
+      text-align: center;
+      color: #cbd5e1;
+      font-size: 13px;
+      background: radial-gradient(circle at center, rgba(120, 83, 46, 0.24), rgba(17, 13, 11, 0.96));
+    }
+
+    .archive-photo {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+      transition: opacity 0.75s ease;
+    }
+
+    /* Холст поверх фото для рисования заплаток из чистого фото */
+    .patch-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: block;
+      transition: opacity 0.75s ease;
+    }
+
+    /* Видео ожившего снимка */
+    .alive-video {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.85s ease;
+      background: #110d0b;
+    }
+
+    .archive-stage.video-playing .alive-video {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .archive-stage.video-playing .archive-photo,
+    .archive-stage.video-playing .patch-canvas {
+      opacity: 0;
+    }
+
+    .hotspot {
+      position: absolute;
+      z-index: 4;
+      width: 50px;
+      height: 50px;
+      margin-left: -25px;
+      margin-top: -25px;
+      border-radius: 50%;
+      background: transparent;
+      border: 2px solid transparent;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .hotspot.found {
+      pointer-events: none;
+    }
+
+    .stage2-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .stage2-status {
+      min-height: 20px;
+      font-size: 12.5px;
+      color: #fde68a;
+      text-align: left;
+      flex: 1;
+    }
+
+    .btn-reset {
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fef3c7;
+      border-radius: 10px;
+      padding: 6px 11px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-reset:active {
+      transform: scale(0.97);
+    }
+
+    /* Блок завершения этапа после окончания видео */
+    .stage2-complete {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .stage2-complete.visible {
+      display: block;
+      animation: fadeComplete 0.45s ease;
+    }
+
+    @keyframes fadeComplete {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .complete-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-continue {
+      flex: 1 1 auto;
+      border: none;
+      border-radius: 12px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #181008;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      cursor: pointer;
+    }
+
+    .btn-replay {
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #fef3c7;
+      background: rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+    }
+
+    @media (orientation: landscape) and (max-height: 600px) {
+      body {
+        padding: 6px calc(22px + env(safe-area-inset-right)) 6px calc(22px + env(safe-area-inset-left));
+      }
+
+      .stage2-layout {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        max-width: 780px;
+      }
+
+      .stage2-info {
+        flex: 1 1 0;
+        max-width: none;
+        padding: 12px 14px;
+      }
+
+      .archive-stage {
+        flex: 0 0 auto;
+        height: min(88dvh, 365px);
+        aspect-ratio: 3 / 4;
+      }
+
+      h2 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="collage-bg" id="collageBg" aria-hidden="true"></div>
+
+  <div class="stage2-layout">
+    <div class="stage2-info">
+      <div class="stage2-header">
+        <div class="badge">🎞️ Этап 2 • Архивный стол</div>
+        <div class="found-counter" id="foundCounter">Найдено: 0 из 5</div>
+      </div>
+      <h2>Найди 5 новогодних мелочей, которых там не было 🎄</h2>
+
+      <div class="stage2-footer">
+        <div class="stage2-status" id="stage2Status"></div>
+        <button type="button" class="btn-reset" id="resetBtn">Сбросить</button>
+      </div>
+
+      <div class="stage2-complete" id="stage2Complete">
+        <p style="margin-bottom: 8px; color: #fde68a;">Маленький архивный сюрприз позади 🎄</p>
+        <div class="complete-actions">
+          <button type="button" class="btn-continue" id="continueBtn">Дальше →</button>
+          <button type="button" class="btn-replay" id="replayVideoBtn">Смотреть ещё раз</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="archive-stage" id="archiveStage">
+      <div class="archive-placeholder" id="archivePlaceholder">
+        <strong>Вертикальный кадр</strong>
+        <span>Укажи photoSrc и cleanPhotoSrc в stage2Config</span>
+      </div>
+      <img class="archive-photo" id="archivePhoto" alt="Снимок с деталями" style="display: none;" />
+      <canvas class="patch-canvas" id="patchCanvas"></canvas>
+      <video
+        class="alive-video"
+        id="aliveVideo"
+        playsinline
+        webkit-playsinline
+        muted
+        preload="auto"
+      ></video>
+    </div>
+  </div>
+
+  <script>
+    const stage2Config = {
+      photoSrc: "1P_2.jpg",
+      cleanPhotoSrc: "1P.jpg",
+      aliveVideoSrc: "1P_alive.mp4",
+      videoDelayMs: 1400,
+      nextStageUrl: "",
+      collagePhotos: ["bg1.jpg", "bg2.jpg", "bg3.jpg", "bg4.jpg"],
+      spots: [
+        { id: "ball", label: "красный ёлочный шарик", x: 47, y: 9, rx: 24, ry: 28 },
+        { id: "snowflake", label: "снежинку на ковре", x: 68, y: 18, rx: 30, ry: 30 },
+        { id: "tangerine", label: "мандарин на обоях", x: 2, y: 42, rx: 28, ry: 26 },
+        { id: "gift", label: "подарочную коробочку", x: 96, y: 56, rx: 30, ry: 26 },
+        { id: "bell", label: "золотой колокольчик", x: 61, y: 95, rx: 28, ry: 26 }
+      ]
+    };
+
+    const defaultCollageSlots = [
+      { left: "11%", top: "17%", rot: "-8deg", w: "clamp(108px, 18vw, 175px)" },
+      { left: "13%", top: "82%", rot: "6deg", w: "clamp(100px, 17vw, 165px)" },
+      { left: "89%", top: "18%", rot: "7deg", w: "clamp(106px, 18vw, 172px)" },
+      { left: "88%", top: "82%", rot: "-6deg", w: "clamp(102px, 17vw, 168px)" },
+      { left: "34%", top: "11%", rot: "-4deg", w: "clamp(94px, 15vw, 150px)" },
+      { left: "66%", top: "89%", rot: "5deg", w: "clamp(94px, 15vw, 150px)" },
+      { left: "26%", top: "88%", rot: "-5deg", w: "clamp(92px, 14vw, 145px)" },
+      { left: "74%", top: "12%", rot: "4deg", w: "clamp(92px, 14vw, 145px)" }
+    ];
+
+    const collageBg = document.getElementById("collageBg");
+    const archiveStage = document.getElementById("archiveStage");
+    const archivePlaceholder = document.getElementById("archivePlaceholder");
+    const archivePhoto = document.getElementById("archivePhoto");
+    const patchCanvas = document.getElementById("patchCanvas");
+    const aliveVideo = document.getElementById("aliveVideo");
+    const foundCounter = document.getElementById("foundCounter");
+    const stage2Status = document.getElementById("stage2Status");
+    const resetBtn = document.getElementById("resetBtn");
+    const stage2Complete = document.getElementById("stage2Complete");
+    const continueBtn = document.getElementById("continueBtn");
+    const replayVideoBtn = document.getElementById("replayVideoBtn");
+
+    const foundIds = new Set();
+    const cleanImg = new Image();
+    let cleanImgLoaded = false;
+    let videoTriggered = false;
+    let videoDelayTimer = null;
+
+    cleanImg.onload = () => {
+      cleanImgLoaded = true;
+      redrawPatches();
+    };
+    if (stage2Config.cleanPhotoSrc) {
+      cleanImg.src = stage2Config.cleanPhotoSrc;
+    }
+
+    if (stage2Config.aliveVideoSrc) {
+      aliveVideo.src = stage2Config.aliveVideoSrc;
+    }
+
+    function clearVideoDelayTimer() {
+      if (videoDelayTimer !== null) {
+        clearTimeout(videoDelayTimer);
+        videoDelayTimer = null;
+      }
+    }
+
+    function getCoverCrop(imgW, imgH, boxW, boxH) {
+      const imgRatio = imgW / imgH;
+      const boxRatio = boxW / boxH;
+      let sx = 0;
+      let sy = 0;
+      let sw = imgW;
+      let sh = imgH;
+
+      if (imgRatio > boxRatio) {
+        sw = imgH * boxRatio;
+        sx = (imgW - sw) / 2;
+      } else {
+        sh = imgW / boxRatio;
+        sy = (imgH - sh) / 2;
+      }
+      return { sx, sy, sw, sh };
+    }
+
+    function redrawPatches() {
+      const rect = archiveStage.getBoundingClientRect();
+      const w = Math.round(rect.width);
+      const h = Math.round(rect.height);
+      if (!w || !h) return;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      patchCanvas.width = w * dpr;
+      patchCanvas.height = h * dpr;
+
+      const ctx = patchCanvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+
+      if (!cleanImgLoaded || foundIds.size === 0) return;
+
+      const crop = getCoverCrop(cleanImg.naturalWidth, cleanImg.naturalHeight, w, h);
+
+      stage2Config.spots.forEach((spot) => {
+        if (!foundIds.has(spot.id)) return;
+
+        const cx = (spot.x / 100) * w;
+        const cy = (spot.y / 100) * h;
+        const rx = spot.rx || 26;
+        const ry = spot.ry || 26;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.clip();
+
+        ctx.drawImage(
+          cleanImg,
+          crop.sx,
+          crop.sy,
+          crop.sw,
+          crop.sh,
+          0,
+          0,
+          w,
+          h
+        );
+
+        const grad = ctx.createRadialGradient(
+          cx,
+          cy,
+          Math.min(rx, ry) * 0.45,
+          cx,
+          cy,
+          Math.max(rx, ry) * 1.05
+        );
+        grad.addColorStop(0, "rgba(0,0,0,0)");
+        grad.addColorStop(1, "rgba(17,13,11,0.22)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(cx - rx * 1.2, cy - ry * 1.2, rx * 2.4, ry * 2.4);
+
+        ctx.restore();
+      });
+    }
+
+    function playAliveVideo() {
+      clearVideoDelayTimer();
+
+      if (!stage2Config.aliveVideoSrc) {
+        stage2Complete.classList.add("visible");
+        return;
+      }
+
+      archiveStage.classList.add("video-playing");
+      stage2Complete.classList.remove("visible");
+      aliveVideo.currentTime = 0;
+
+      const playPromise = aliveVideo.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {
+          aliveVideo.controls = true;
+        });
+      }
+    }
+
+    function renderCollage() {
+      collageBg.innerHTML = "";
+      if (!Array.isArray(stage2Config.collagePhotos) || stage2Config.collagePhotos.length === 0) {
+        return;
+      }
+
+      stage2Config.collagePhotos.forEach((src, index) => {
+        if (!src) return;
+        const slot = defaultCollageSlots[index % defaultCollageSlots.length];
+        const tile = document.createElement("div");
+        tile.className = "collage-tile";
+        tile.style.left = slot.left;
+        tile.style.top = slot.top;
+        tile.style.setProperty("--rot", slot.rot);
+        tile.style.setProperty("--w", slot.w);
+
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = "";
+        img.loading = "lazy";
+
+        tile.appendChild(img);
+        collageBg.appendChild(tile);
+      });
+    }
+
+    function renderHotspots() {
+      archiveStage.querySelectorAll(".hotspot").forEach((el) => el.remove());
+
+      stage2Config.spots.forEach((spot) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "hotspot";
+        btn.style.left = spot.x + "%";
+        btn.style.top = spot.y + "%";
+        btn.setAttribute("aria-label", spot.label || "Деталь");
+
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (foundIds.has(spot.id) || videoTriggered) return;
+
+          foundIds.add(spot.id);
+          btn.classList.add("found");
+          redrawPatches();
+          foundCounter.textContent = `Найдено: ${foundIds.size} из ${stage2Config.spots.length}`;
+
+          if (foundIds.size >= stage2Config.spots.length) {
+            videoTriggered = true;
+            stage2Status.textContent = "Все 5 деталей убраны!";
+            clearVideoDelayTimer();
+            videoDelayTimer = setTimeout(() => {
+              playAliveVideo();
+            }, stage2Config.videoDelayMs);
+          } else {
+            stage2Status.textContent = `Убрано: ${spot.label}!`;
+          }
+        });
+
+        archiveStage.appendChild(btn);
+      });
+    }
+
+    function resetStage2() {
+      clearVideoDelayTimer();
+      foundIds.clear();
+      videoTriggered = false;
+      archiveStage.classList.remove("video-playing");
+      stage2Complete.classList.remove("visible");
+      aliveVideo.controls = false;
+      aliveVideo.pause();
+      try {
+        aliveVideo.currentTime = 0;
+      } catch (_) {}
+
+      redrawPatches();
+      foundCounter.textContent = `Найдено: 0 из ${stage2Config.spots.length}`;
+      stage2Status.textContent = "";
+      renderHotspots();
+    }
+
+    aliveVideo.addEventListener("ended", () => {
+      stage2Status.textContent = "Момент пойман — идём дальше ✨";
+      stage2Complete.classList.add("visible");
+    });
+
+    aliveVideo.addEventListener("error", () => {
+      stage2Status.textContent = "Не удалось загрузить видеофайл — проверь имя в aliveVideoSrc.";
+      stage2Complete.classList.add("visible");
+    });
+
+    replayVideoBtn.addEventListener("click", () => {
+      stage2Status.textContent = "Смотрим ролик ещё раз...";
+      playAliveVideo();
+    });
+
+    continueBtn.addEventListener("click", () => {
+      if (stage2Config.nextStageUrl) {
+        window.location.href = stage2Config.nextStageUrl;
+      } else {
+        stage2Status.textContent = "Готово! Здесь можно подключить следующий этап или финальную открытку.";
+      }
+    });
+
+    function initStage2() {
+      renderCollage();
+
+      if (stage2Config.photoSrc) {
+        archivePhoto.src = stage2Config.photoSrc;
+        archivePhoto.style.display = "block";
+        archivePlaceholder.style.display = "none";
+      }
+
+      archiveStage.addEventListener("click", () => {
+        if (!videoTriggered && foundIds.size < stage2Config.spots.length) {
+          stage2Status.textContent = "Мимо — присмотрись к коврам, обоям, покрывалу и штанам.";
+        }
+      });
+
+      resetBtn.addEventListener("click", resetStage2);
+      window.addEventListener("resize", redrawPatches);
+      renderHotspots();
+      redrawPatches();
+    }
+
+    initStage2();
+  </script>
+</body>
+</html>
