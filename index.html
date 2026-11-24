@@ -1,0 +1,2843 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Новогодний сюрприз</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Rubik+Bubbles&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      background: #090d16;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+    }
+
+    body:not(.stage2-active):not(.stage3-active) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      position: relative;
+    }
+
+    /* Обёртка поднимается в 2 раза медленнее как занавес снизу вверх */
+    .wrapper-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 35%, rgba(185, 28, 28, 0.22), transparent 60%),
+        linear-gradient(160deg, #0b1120 0%, #111827 55%, #090d16 100%);
+      transition: transform 2.9s cubic-bezier(0.22, 0.78, 0.28, 1),
+                  opacity 2.5s ease-out;
+      will-change: transform, opacity;
+    }
+
+    .wrapper-overlay.unwrapped {
+      transform: translate3d(0, -105vh, 0);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Мягкое боке гирлянд на стартовом экране */
+    .bokeh-layer {
+      position: absolute;
+      inset: -12%;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bokeh-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(22px);
+      opacity: 0.42;
+      will-change: transform, opacity;
+    }
+
+    .bokeh-orb--gold-1 {
+      width: 190px;
+      height: 190px;
+      top: 10%;
+      left: 12%;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.75) 0%, rgba(245, 158, 11, 0.12) 68%, transparent 100%);
+      animation: bokehDriftA 9s ease-in-out infinite alternate;
+    }
+
+    .bokeh-orb--red-1 {
+      width: 220px;
+      height: 220px;
+      bottom: 12%;
+      right: 10%;
+      background: radial-gradient(circle, rgba(248, 113, 113, 0.65) 0%, rgba(185, 28, 28, 0.14) 70%, transparent 100%);
+      animation: bokehDriftB 11s ease-in-out infinite alternate;
+    }
+
+    .bokeh-orb--green-1 {
+      width: 170px;
+      height: 170px;
+      top: 18%;
+      right: 18%;
+      background: radial-gradient(circle, rgba(163, 230, 53, 0.5) 0%, rgba(77, 124, 15, 0.1) 70%, transparent 100%);
+      animation: bokehPulse 7.5s ease-in-out infinite alternate;
+    }
+
+    .bokeh-orb--gold-2 {
+      width: 140px;
+      height: 140px;
+      bottom: 22%;
+      left: 18%;
+      background: radial-gradient(circle, rgba(254, 240, 138, 0.68) 0%, rgba(251, 191, 36, 0.12) 70%, transparent 100%);
+      animation: bokehPulse 8.5s ease-in-out 1.5s infinite alternate;
+    }
+
+    .bokeh-orb--warm-1 {
+      width: 110px;
+      height: 110px;
+      top: 52%;
+      left: 8%;
+      background: radial-gradient(circle, rgba(251, 146, 60, 0.62) 0%, transparent 72%);
+      animation: bokehDriftA 10s ease-in-out 0.8s infinite alternate;
+    }
+
+    .bokeh-orb--warm-2 {
+      width: 125px;
+      height: 125px;
+      top: 44%;
+      right: 9%;
+      background: radial-gradient(circle, rgba(253, 224, 71, 0.58) 0%, transparent 72%);
+      animation: bokehDriftB 8.2s ease-in-out 2s infinite alternate;
+    }
+
+    @keyframes bokehDriftA {
+      0% { transform: translate3d(0, 0, 0) scale(0.95); opacity: 0.34; }
+      100% { transform: translate3d(18px, -14px, 0) scale(1.12); opacity: 0.52; }
+    }
+
+    @keyframes bokehDriftB {
+      0% { transform: translate3d(0, 0, 0) scale(1.06); opacity: 0.48; }
+      100% { transform: translate3d(-20px, 12px, 0) scale(0.92); opacity: 0.32; }
+    }
+
+    @keyframes bokehPulse {
+      0% { transform: translate3d(0, 0, 0) scale(0.9); opacity: 0.28; }
+      100% { transform: translate3d(10px, 10px, 0) scale(1.15); opacity: 0.48; }
+    }
+
+    .gift-box {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      padding: 24px 20px 22px;
+      border-radius: 22px;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(251, 191, 36, 0.32);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      text-align: center;
+      overflow: hidden;
+      z-index: 2;
+    }
+
+    /* Декоративная лента по краю упаковки */
+    .gift-box::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        rgba(185, 28, 28, 0.28),
+        rgba(239, 68, 68, 0.42),
+        rgba(185, 28, 28, 0.28)
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .gift-box > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .gift-tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.24);
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      color: #fca5a5;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .gift-title {
+      margin: 0 0 10px;
+      font-size: 20px;
+      line-height: 1.25;
+      color: #fff;
+    }
+
+    .gift-sub {
+      margin: 0 0 18px;
+      font-size: 13.5px;
+      line-height: 1.42;
+      color: #cbd5e1;
+    }
+
+    .btn-unwrap {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 13px 16px;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #111827;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      box-shadow: 0 10px 24px rgba(245, 158, 11, 0.32);
+      cursor: pointer;
+      transition: transform 0.14s ease, filter 0.2s ease;
+    }
+
+    .btn-unwrap:hover {
+      filter: brightness(1.06);
+    }
+
+    .btn-unwrap:active {
+      transform: scale(0.97);
+    }
+
+    .bg-photo {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 18% center;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .bg-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        rgba(9, 13, 22, 0.04) 0%,
+        rgba(9, 13, 22, 0.28) 50%,
+        rgba(9, 13, 22, 0.68) 100%
+      );
+      z-index: 2;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+
+    .snow-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      overflow: hidden;
+      transition: opacity 0.5s ease;
+    }
+
+    .flake {
+      position: absolute;
+      top: -12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      animation: fall linear infinite;
+      will-change: transform, opacity;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translate3d(0, -10px, 0);
+        opacity: 0;
+      }
+      15% { opacity: 0.9; }
+      100% {
+        transform: translate3d(-20px, 105vh, 0);
+        opacity: 0.25;
+      }
+    }
+
+    /* Уезжает вверх только плашка — фон остаётся нетронутым до подмены на видео */
+    body.card-exiting-up .card {
+      transform: translate3d(0, -125vh, 0);
+      opacity: 0;
+      transition: transform 0.65s cubic-bezier(0.32, 0.04, 0.68, 0.3),
+                  opacity 0.52s ease;
+      will-change: transform, opacity;
+    }
+
+    /* Полноэкранный слой видеоперехода: без затемнения и без fade-in, чтобы не было шва */
+    .transition-video-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      display: block;
+      pointer-events: none;
+      background: #090d16;
+      opacity: 1;
+      transform: scale(1) translate3d(0, 0, 0);
+      transition: transform 0.92s cubic-bezier(0.22, 0.85, 0.36, 1),
+                  opacity 0.82s ease;
+      will-change: transform, opacity;
+    }
+
+    .transition-video-overlay.active-video {
+      z-index: 20;
+    }
+
+    /* Плавный отъезд видео назад при завершении ролика */
+    .transition-video-overlay.receding {
+      opacity: 0;
+      transform: scale(0.87) translate3d(0, 14px, 0);
+    }
+
+    body.video-seamless .bg-photo {
+      opacity: 0;
+    }
+
+    body.video-seamless .bg-overlay {
+      opacity: 0;
+    }
+
+    .transition-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 18% center;
+      display: block;
+    }
+
+    .card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 400px;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+      transition: transform 0.35s ease, opacity 0.35s ease;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    #mainCard h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.28;
+    }
+
+    #mainCard p {
+      margin: 0 0 12px;
+      color: #e2e8f0;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .q-counter {
+      font-size: 12px;
+      color: #cbd5e1;
+      margin-bottom: 4px;
+    }
+
+    .choices {
+      position: relative;
+      min-height: 144px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    #mainCard button {
+      border: none;
+      border-radius: 13px;
+      padding: 11px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.28;
+      cursor: pointer;
+      transition: transform 0.14s ease, background 0.2s ease, opacity 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    #mainCard button:active {
+      transform: scale(0.97);
+    }
+
+    #mainCard button:disabled {
+      cursor: default;
+      opacity: 0.75;
+    }
+
+    .btn-option {
+      background: rgba(255, 255, 255, 0.13);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      text-align: left;
+    }
+
+    .btn-option:hover:not(:disabled) {
+      background: rgba(245, 158, 11, 0.24);
+      border-color: #f59e0b;
+    }
+
+    .btn-dodge {
+      background: rgba(239, 68, 68, 0.24);
+      color: #fecaca;
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      width: fit-content;
+      max-width: 100%;
+      align-self: flex-end;
+    }
+
+    .btn-next {
+      width: 100%;
+      background: #f59e0b;
+      color: #111827;
+      margin-top: 8px;
+    }
+
+    .btn-next:hover {
+      background: #fbbf24;
+    }
+
+    .note {
+      min-height: 22px;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #fbbf24;
+      text-align: center;
+      line-height: 1.35;
+      opacity: 0;
+      transition: opacity 0.22s ease;
+    }
+
+    .note.visible {
+      opacity: 1;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.35s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Горизонтальный телефон / планшет (1-й этап) */
+    @media (orientation: landscape) and (max-height: 600px) {
+      body:not(.stage2-active):not(.stage3-active) {
+        align-items: center;
+        justify-content: flex-end;
+        padding: 10px calc(18px + env(safe-area-inset-right)) 10px calc(18px + env(safe-area-inset-left));
+      }
+
+      body:not(.stage2-active):not(.stage3-active) .bg-photo,
+      body:not(.stage2-active):not(.stage3-active) .transition-video {
+        object-position: 10% center;
+      }
+
+      body:not(.stage2-active):not(.stage3-active) .card {
+        max-width: 360px;
+        padding: 12px 14px;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.74);
+      }
+
+      body:not(.stage2-active):not(.stage3-active) #mainCard h2 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+
+      body:not(.stage2-active):not(.stage3-active) .choices {
+        min-height: 122px;
+        gap: 6px;
+      }
+
+      body:not(.stage2-active):not(.stage3-active) #mainCard button {
+        padding: 9px 12px;
+        font-size: 13px;
+      }
+    }
+
+    /* Широкие экраны (ПК, 1-й этап) */
+    @media (min-width: 960px) {
+      body:not(.stage2-active):not(.stage3-active) {
+        justify-content: flex-start;
+        padding-left: 54%;
+      }
+    }
+
+    /* Вертикальный телефон (1-й этап) */
+    @media (orientation: portrait) and (max-width: 640px) {
+      body:not(.stage2-active):not(.stage3-active) {
+        align-items: flex-end;
+        padding: calc(12px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
+      }
+
+      body:not(.stage2-active):not(.stage3-active) .bg-photo,
+      body:not(.stage2-active):not(.stage3-active) .transition-video {
+        object-position: 28% 30%;
+      }
+
+      body:not(.stage2-active):not(.stage3-active) .bg-overlay {
+        background: linear-gradient(
+          180deg,
+          rgba(9, 13, 22, 0.04) 0%,
+          rgba(9, 13, 22, 0.22) 44%,
+          rgba(9, 13, 22, 0.78) 100%
+        );
+      }
+
+      body:not(.stage2-active):not(.stage3-active) .card {
+        max-width: 400px;
+        padding: 16px;
+      }
+    }
+
+    /* ==================== ЭТАП 2 — АРХИВНЫЙ СТОЛ ==================== */
+    .stage2-container {
+      display: none;
+      width: 100%;
+      min-height: 100%;
+      min-height: 100dvh;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      position: relative;
+      z-index: 10;
+    }
+
+    body.stage2-active {
+      display: block;
+      padding: 0;
+      background:
+        radial-gradient(circle at 30% 35%, rgba(251, 191, 36, 0.14), transparent 50%),
+        radial-gradient(ellipse at 70% 55%, rgba(180, 83, 9, 0.14), rgba(18, 12, 8, 0.94) 70%, #070504 100%);
+    }
+
+    body.stage2-active .bg-photo,
+    body.stage2-active .bg-overlay,
+    body.stage2-active .snow-layer,
+    body.stage2-active #mainCard,
+    body.stage2-active .stage3-scene {
+      display: none;
+    }
+
+    body.stage2-active .stage2-container {
+      display: flex;
+    }
+
+    /* Тёмный архивный стол и плёночная перфорация по краям */
+    body.stage2-active::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background-image:
+        linear-gradient(
+          90deg,
+          rgba(10, 7, 5, 0.88) 0px,
+          rgba(32, 21, 14, 0.65) 26px,
+          transparent 30px,
+          transparent calc(100% - 30px),
+          rgba(32, 21, 14, 0.65) calc(100% - 26px),
+          rgba(10, 7, 5, 0.88) 100%
+        ),
+        repeating-linear-gradient(
+          to bottom,
+          transparent 0px,
+          transparent 18px,
+          rgba(251, 191, 36, 0.24) 18px,
+          rgba(251, 191, 36, 0.24) 30px,
+          transparent 30px,
+          transparent 48px
+        );
+      background-size:
+        100% 100%,
+        10px 48px,
+        10px 48px;
+      background-repeat:
+        no-repeat,
+        repeat-y,
+        repeat-y;
+      background-position:
+        center center,
+        9px top,
+        calc(100% - 9px) top;
+      box-shadow: inset 0 0 85px rgba(0, 0, 0, 0.72);
+    }
+
+    /* Плотный фоновый коллаж из повторяющихся фото вразброс */
+    .collage-bg {
+      position: fixed;
+      inset: -14%;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0;
+      transform: scale(1.06) translate3d(0, 18px, 0);
+      transition: transform 0.95s cubic-bezier(0.22, 0.85, 0.36, 1),
+                  opacity 0.88s ease;
+      will-change: transform, opacity;
+    }
+
+    body.stage2-active .collage-bg {
+      opacity: 1;
+      transform: scale(1) translate3d(0, 0, 0);
+    }
+
+    .collage-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(12, 9, 7, 0.42) 0%, rgba(10, 7, 5, 0.74) 100%);
+      pointer-events: none;
+    }
+
+    .collage-tile {
+      position: absolute;
+      z-index: 1;
+      width: var(--w, clamp(132px, 22vw, 225px));
+      aspect-ratio: 4 / 3;
+      padding: 4px;
+      border-radius: 7px;
+      background: #2b221a;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.75);
+      opacity: 1;
+      filter: blur(0.45px) sepia(0.24) contrast(0.98) brightness(0.92);
+      transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+    }
+
+    .collage-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+      display: block;
+      opacity: 1;
+    }
+
+    .stage2-layout {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      opacity: 0;
+      transform: scale(1.04) translate3d(0, 22px, 0);
+      transition: transform 0.9s cubic-bezier(0.22, 0.85, 0.36, 1) 0.08s,
+                  opacity 0.82s ease 0.08s;
+      will-change: transform, opacity;
+    }
+
+    body.stage2-active .stage2-layout {
+      opacity: 1;
+      transform: scale(1) translate3d(0, 0, 0);
+    }
+
+    .stage2-info {
+      width: 100%;
+      max-width: 420px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(24, 18, 14, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(251, 191, 36, 0.26);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.68);
+    }
+
+    .stage2-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .stage2-badge {
+      display: inline-block;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .found-counter {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.14);
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .stage2-title {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.25;
+      color: #fff;
+    }
+
+    .stage2-text {
+      margin: 0 0 10px;
+      color: #e2e8f0;
+      font-size: 13.5px;
+      line-height: 1.4;
+    }
+
+    .archive-stage {
+      position: relative;
+      height: min(64dvh, 470px);
+      aspect-ratio: 3 / 4;
+      max-width: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #110d0b;
+      border: 2px solid rgba(245, 240, 230, 0.28);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.78);
+      flex-shrink: 0;
+    }
+
+    .archive-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px;
+      text-align: center;
+      color: #cbd5e1;
+      font-size: 13px;
+      background: radial-gradient(circle at center, rgba(120, 83, 46, 0.24), rgba(17, 13, 11, 0.96));
+    }
+
+    .archive-photo {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+      transition: opacity 0.75s ease;
+    }
+
+    .patch-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: block;
+      transition: opacity 0.75s ease;
+    }
+
+    .alive-video {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.85s ease;
+      background: #110d0b;
+    }
+
+    .archive-stage.video-playing .alive-video {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .archive-stage.video-playing .archive-photo,
+    .archive-stage.video-playing .patch-canvas {
+      opacity: 0;
+    }
+
+    .hotspot {
+      position: absolute;
+      z-index: 4;
+      width: 50px;
+      height: 50px;
+      margin-left: -25px;
+      margin-top: -25px;
+      border-radius: 50%;
+      background: transparent;
+      border: 2px solid transparent;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .hotspot.found {
+      pointer-events: none;
+    }
+
+    .stage2-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .stage2-status {
+      min-height: 20px;
+      font-size: 12.5px;
+      color: #fde68a;
+      text-align: left;
+      flex: 1;
+    }
+
+    .btn-reset {
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fef3c7;
+      border-radius: 10px;
+      padding: 6px 11px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-reset:active {
+      transform: scale(0.97);
+    }
+
+    .stage2-complete {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .stage2-complete.visible {
+      display: block;
+      animation: fadeComplete 0.45s ease;
+    }
+
+    @keyframes fadeComplete {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .complete-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-continue {
+      flex: 1 1 auto;
+      border: none;
+      border-radius: 12px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #181008;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      cursor: pointer;
+    }
+
+    .btn-replay {
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #fef3c7;
+      background: rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+    }
+
+    @media (orientation: landscape) and (max-height: 600px) {
+      body.stage2-active .stage2-container {
+        padding: 4px calc(22px + env(safe-area-inset-right)) 4px calc(22px + env(safe-area-inset-left));
+      }
+
+      .stage2-layout {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        max-width: 820px;
+      }
+
+      .stage2-info {
+        flex: 1 1 0;
+        max-width: none;
+        padding: 10px 12px;
+        border-radius: 15px;
+      }
+
+      .stage2-header {
+        margin-bottom: 6px;
+      }
+
+      .stage2-badge,
+      .found-counter {
+        font-size: 11px;
+        padding: 3px 9px;
+      }
+
+      .archive-stage {
+        flex: 0 0 auto;
+        height: min(92dvh, 405px);
+        aspect-ratio: 3 / 4;
+      }
+
+      .stage2-title {
+        font-size: 14.5px;
+        line-height: 1.22;
+        margin-bottom: 5px;
+      }
+
+      .stage2-text {
+        font-size: 12px;
+        line-height: 1.3;
+        margin-bottom: 6px;
+      }
+
+      .stage2-status {
+        font-size: 11.5px;
+        min-height: 16px;
+      }
+
+      .btn-reset {
+        padding: 5px 9px;
+        font-size: 11px;
+      }
+
+      .stage2-complete {
+        margin-top: 7px;
+        padding-top: 7px;
+      }
+
+      .btn-continue,
+      .btn-replay {
+        padding: 7px 11px;
+        font-size: 11.5px;
+        border-radius: 10px;
+      }
+    }
+
+    /* ==================== ЭТАП 3 — ФИНАЛЬНАЯ КНИГА ==================== */
+    .stage3-scene {
+      display: none;
+      position: relative;
+      width: 100vw;
+      height: 100dvh;
+      overflow: hidden;
+      perspective: 2400px;
+    }
+
+    body.stage3-active {
+      display: block;
+      padding: 0;
+      background: #14110c;
+      color: #fef3c7;
+    }
+
+    body.stage3-active .bg-photo,
+    body.stage3-active .bg-overlay,
+    body.stage3-active .snow-layer,
+    body.stage3-active #mainCard,
+    body.stage3-active .stage2-container {
+      display: none;
+    }
+
+    body.stage3-active .stage3-scene {
+      display: block;
+    }
+
+    .bg-layer {
+      position: fixed;
+      inset: -8px;
+      z-index: 1;
+      background-image: url("home_tree_bg.jpg");
+      background-size: cover;
+      background-position: center;
+      filter: blur(1px) saturate(1.04) brightness(0.92);
+      transform: scale(1.01);
+      pointer-events: none;
+    }
+
+    .bg-scrim {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      background:
+        radial-gradient(circle at 74% 48%, rgba(251, 191, 36, 0.12), rgba(10, 12, 9, 0.34) 68%),
+        linear-gradient(155deg, rgba(12, 16, 12, 0.34) 0%, rgba(22, 17, 11, 0.28) 56%, rgba(8, 10, 8, 0.44) 100%);
+      pointer-events: none;
+    }
+
+    /* Холст фейерверка за правой финальной надписью */
+    .fireworks-canvas {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 60vw;
+      height: 100dvh;
+      z-index: 7;
+      pointer-events: none;
+      opacity: 0;
+      will-change: opacity;
+      transition: opacity 0.8s ease 0.45s;
+    }
+
+    .stage3-scene.closed-left .fireworks-canvas {
+      opacity: 1;
+    }
+
+    .book-dock {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 52vw;
+      width: 48vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(10px, 2vh, 22px) clamp(12px, 2.5vw, 32px);
+      z-index: 6;
+      pointer-events: none;
+      transition: left 0.9s cubic-bezier(0.22, 0.78, 0.25, 1),
+                  width 0.9s cubic-bezier(0.22, 0.78, 0.25, 1),
+                  padding 0.9s cubic-bezier(0.22, 0.78, 0.25, 1);
+    }
+
+    .stage3-scene.opened .book-dock {
+      left: 3vw;
+      width: 94vw;
+      padding: clamp(8px, 1.4vh, 16px) clamp(10px, 1.8vw, 24px);
+    }
+
+    .stage3-scene.closed-left .book-dock {
+      left: 2vw;
+      width: 46vw;
+      padding: clamp(12px, 2.2vh, 24px) clamp(14px, 2.5vw, 32px);
+      transition: none;
+    }
+
+    .book-shell {
+      position: relative;
+      width: 100%;
+      height: min(540px, 86dvh);
+      pointer-events: auto;
+      transform-style: preserve-3d;
+    }
+
+    /* Внешняя обложка в коричневом переплёте */
+    .shrek-cover {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-origin: left center;
+      transform-style: preserve-3d;
+      backface-visibility: hidden;
+      border-radius: 16px 22px 22px 16px;
+      padding: clamp(14px, 2.4vh, 26px);
+      background:
+        linear-gradient(145deg, #4b321b 0%, #2e1d0f 55%, #1e1309 100%);
+      border: 3px solid #a3b838;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.82),
+        inset 0 0 0 2px rgba(251, 191, 36, 0.35),
+        inset 14px 0 26px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+      z-index: 8;
+      opacity: 1;
+      transform: rotateY(0deg);
+      transition: transform 1.1s cubic-bezier(0.22, 0.78, 0.25, 1),
+                  opacity 0.4s ease 0.6s;
+      will-change: transform, opacity;
+    }
+
+    .shrek-cover::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 11px 16px 16px 11px;
+      border: 1.5px dashed rgba(217, 249, 157, 0.45);
+      pointer-events: none;
+    }
+
+    /* Сказочные узоры по краям обложки */
+    .cover-ornament {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .ornament-frame {
+      position: absolute;
+      inset: 18px;
+      border-radius: 9px 14px 14px 9px;
+      border: 1px solid rgba(253, 224, 71, 0.22);
+      box-shadow: inset 0 0 18px rgba(251, 191, 36, 0.08);
+    }
+
+    .corner-filigree {
+      position: absolute;
+      width: clamp(38px, 6vw, 62px);
+      height: clamp(38px, 6vw, 62px);
+      border-color: rgba(253, 224, 71, 0.62);
+      border-style: solid;
+      border-width: 0;
+    }
+
+    .corner-filigree::before {
+      content: "❀";
+      position: absolute;
+      font-size: 13px;
+      color: rgba(253, 224, 71, 0.65);
+    }
+
+    .corner-filigree::after {
+      content: "✦";
+      position: absolute;
+      font-size: 11px;
+      color: rgba(190, 242, 100, 0.8);
+    }
+
+    .corner-tl {
+      top: 14px;
+      left: 14px;
+      border-top-width: 2.5px;
+      border-left-width: 2.5px;
+      border-top-left-radius: 12px;
+    }
+    .corner-tl::before { top: 4px; left: 6px; }
+    .corner-tl::after { top: 20px; left: 7px; }
+
+    .corner-tr {
+      top: 14px;
+      right: 14px;
+      border-top-width: 2.5px;
+      border-right-width: 2.5px;
+      border-top-right-radius: 16px;
+    }
+    .corner-tr::before { top: 4px; right: 6px; }
+    .corner-tr::after { top: 20px; right: 7px; }
+
+    .corner-bl {
+      bottom: 14px;
+      left: 14px;
+      border-bottom-width: 2.5px;
+      border-left-width: 2.5px;
+      border-bottom-left-radius: 12px;
+    }
+    .corner-bl::before { bottom: 3px; left: 6px; }
+    .corner-bl::after { bottom: 19px; left: 7px; }
+
+    .corner-br {
+      bottom: 14px;
+      right: 14px;
+      border-bottom-width: 2.5px;
+      border-right-width: 2.5px;
+      border-bottom-right-radius: 16px;
+    }
+    .corner-br::before { bottom: 3px; right: 6px; }
+    .corner-br::after { bottom: 19px; right: 7px; }
+
+    .edge-scroll-top,
+    .edge-scroll-bottom {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(76%, 270px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: rgba(253, 224, 71, 0.56);
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      white-space: nowrap;
+    }
+
+    .edge-scroll-top { top: 14px; }
+    .edge-scroll-bottom { bottom: 14px; }
+
+    .side-vine-left,
+    .side-vine-right {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: rgba(253, 224, 71, 0.45);
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    .side-vine-left { left: 16px; }
+    .side-vine-right { right: 16px; }
+
+    .cover-details {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(6px, 1.4vh, 14px) 8px clamp(4px, 1vh, 10px);
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 2;
+    }
+
+    .stage3-scene.closing-fold .cover-details,
+    .stage3-scene.closed-left .cover-details {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: none;
+    }
+
+    .cover-spacer {
+      height: clamp(8px, 2vh, 18px);
+      flex-shrink: 0;
+    }
+
+    /* Надпись FAMILY в снегу с красной шапочкой на Y */
+    .family-hero {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: clamp(20px, 3.6vh, 34px);
+      user-select: none;
+      z-index: 2;
+    }
+
+    .family-word-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: flex-end;
+      line-height: 1;
+    }
+
+    .family-word {
+      font-family: "Fredoka", sans-serif;
+      font-size: clamp(42px, 8vh, 82px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.05em;
+      color: #fde047;
+      -webkit-text-stroke: 2px #7f1d1d;
+      text-shadow:
+        0 5px 0 #991b1b,
+        0 10px 24px rgba(0, 0, 0, 0.82);
+    }
+
+    .santa-hat {
+      position: relative;
+      display: inline-block;
+      margin-left: 0.01em;
+    }
+
+    .santa-cap {
+      position: absolute;
+      top: -0.34em;
+      right: -0.14em;
+      width: 0.78em;
+      height: 0.52em;
+      pointer-events: none;
+      transform: rotate(15deg);
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.65));
+    }
+
+    .santa-cap-cone {
+      position: absolute;
+      left: 0.08em;
+      bottom: 0.09em;
+      width: 0;
+      height: 0;
+      border-left: 0.25em solid transparent;
+      border-right: 0.27em solid transparent;
+      border-bottom: 0.4em solid #dc2626;
+      transform: rotate(-24deg);
+    }
+
+    .santa-cap-tail {
+      position: absolute;
+      right: 0.09em;
+      top: 0.07em;
+      width: 0.24em;
+      height: 0.16em;
+      border-radius: 0 999px 999px 0;
+      background: #dc2626;
+      transform: rotate(28deg);
+    }
+
+    .santa-cap-trim {
+      position: absolute;
+      left: 0.04em;
+      bottom: 0.01em;
+      width: 0.56em;
+      height: 0.12em;
+      border-radius: 999px;
+      background: #fffbeb;
+      box-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.4),
+        inset 0 -1px 2px rgba(148, 163, 184, 0.45);
+    }
+
+    .santa-cap-pom {
+      position: absolute;
+      right: -0.02em;
+      top: 0.01em;
+      width: 0.18em;
+      height: 0.18em;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.45),
+        inset -2px -2px 4px rgba(186, 230, 253, 0.8);
+    }
+
+    .snow-drift {
+      position: relative;
+      width: 114%;
+      height: clamp(11px, 1.9vh, 17px);
+      margin-top: -2px;
+      border-radius: 58% 42% 62% 48% / 85% 85% 35% 35%;
+      background: linear-gradient(180deg, #ffffff 0%, #e0f2fe 65%, #bae6fd 100%);
+      box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.65),
+        0 0 14px rgba(224, 242, 254, 0.28),
+        inset 0 2px 4px rgba(255, 255, 255, 0.98);
+    }
+
+    .snow-drift::before {
+      content: "";
+      position: absolute;
+      left: 9%;
+      top: -4px;
+      width: 36%;
+      height: 9px;
+      border-radius: 999px;
+      background: #ffffff;
+      box-shadow: 0 -1px 6px rgba(255, 255, 255, 0.45);
+    }
+
+    .snow-drift::after {
+      content: "";
+      position: absolute;
+      right: 8%;
+      top: -3px;
+      width: 30%;
+      height: 8px;
+      border-radius: 999px;
+      background: #f8fafc;
+    }
+
+    .btn-open-book {
+      z-index: 2;
+      border: none;
+      border-radius: 13px;
+      padding: 10px 22px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #161108;
+      background: linear-gradient(135deg, #bef264 0%, #fbbf24 100%);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.2s ease;
+    }
+
+    .btn-open-book:active {
+      transform: scale(0.97);
+    }
+
+    /* Разворот книги */
+    .open-spread {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 0.88fr 1.12fr;
+      gap: clamp(4px, 0.8vw, 10px);
+      padding: clamp(8px, 1.4vh, 14px);
+      border-radius: 18px;
+      background:
+        linear-gradient(90deg,
+          #3d2714 0%,
+          #5a3b1e 48.5%,
+          #24160b 50%,
+          #5a3b1e 51.5%,
+          #3d2714 100%
+        );
+      box-shadow: 0 26px 65px rgba(0, 0, 0, 0.85);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+      transform-style: preserve-3d;
+      transition: opacity 0.4s ease 0.2s;
+    }
+
+    .stage3-scene.cover-opening .shrek-cover,
+    .stage3-scene.pages-sequence .shrek-cover,
+    .stage3-scene.spread-visible .shrek-cover {
+      transform: rotateY(-165deg);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .stage3-scene.cover-opening .open-spread,
+    .stage3-scene.pages-sequence .open-spread,
+    .stage3-scene.spread-visible .open-spread {
+      opacity: 1;
+      z-index: 6;
+    }
+
+    .stage3-scene.spread-visible .open-spread {
+      pointer-events: auto;
+    }
+
+    .page {
+      position: relative;
+      min-width: 0;
+      height: 100%;
+      border-radius: 10px;
+      background:
+        radial-gradient(circle at top, rgba(255, 250, 235, 0.96), #f3e5c8 85%);
+      color: #2b1d10;
+      padding: clamp(10px, 1.8vh, 20px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      box-shadow: inset 0 0 24px rgba(120, 82, 42, 0.25);
+      transform-style: preserve-3d;
+      backface-visibility: hidden;
+    }
+
+    .page-left {
+      padding: clamp(6px, 1.1vh, 10px);
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(145deg, #4a311a 0%, #2c1b0e 65%, #1d1209 100%);
+      box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.55);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .page-left .page-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .page-right {
+      font-family: "Merriweather", Georgia, serif;
+      background: linear-gradient(180deg, #f5ead4 0%, #e7d4b3 100%);
+      transition: background 0.4s ease;
+    }
+
+    .page-right .page-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .stage3-scene.has-left-leaf .page-left,
+    .stage3-scene.spread-visible .page-left {
+      background: radial-gradient(circle at top, rgba(255, 250, 235, 0.96), #f3e5c8 85%);
+      box-shadow: inset 0 0 24px rgba(120, 82, 42, 0.25);
+    }
+
+    .stage3-scene.spread-visible .page-right {
+      background: radial-gradient(circle at top, rgba(255, 250, 235, 0.96), #f3e5c8 85%);
+    }
+
+    .page-lines {
+      position: absolute;
+      inset: clamp(12px, 2vh, 20px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .stage3-scene.pages-sequence .page-lines {
+      opacity: 1;
+    }
+
+    .stage3-scene.spread-visible .page-lines,
+    .stage3-scene.closing-fold .page-lines,
+    .stage3-scene.closed-left .page-lines {
+      opacity: 0;
+    }
+
+    .line-bar {
+      height: 3.5px;
+      border-radius: 999px;
+      background: rgba(66, 42, 20, 0.36);
+    }
+
+    .page-left .line-bar {
+      background: rgba(245, 236, 212, 0.22);
+    }
+
+    .stage3-scene.has-left-leaf .page-left .line-bar {
+      background: rgba(66, 42, 20, 0.36);
+    }
+
+    .line-bar.gap-after {
+      margin-bottom: 6px;
+    }
+
+    .open-spread .page-content {
+      opacity: 0;
+      transition: opacity 0.45s ease;
+    }
+
+    .stage3-scene.spread-visible .open-spread .page-content {
+      opacity: 1;
+    }
+
+    .stage3-scene.closing-fold .page-right {
+      transform-origin: left center;
+      transform: rotateY(-174deg);
+      opacity: 0;
+      transition: transform 0.85s cubic-bezier(0.22, 0.78, 0.25, 1),
+                  opacity 0.45s ease 0.35s;
+    }
+
+    .stage3-scene.closing-fold .page-left {
+      transform-origin: left center;
+      transition: opacity 0.5s ease 0.25s;
+    }
+
+    .stage3-scene.closed-left .open-spread {
+      opacity: 0;
+      pointer-events: none;
+      z-index: 3;
+      transition: opacity 0.35s ease;
+    }
+
+    .stage3-scene.closed-left .shrek-cover {
+      transform: rotateY(0deg);
+      opacity: 1;
+      pointer-events: none;
+      z-index: 9;
+      transition: transform 0.85s cubic-bezier(0.22, 0.78, 0.25, 1),
+                  opacity 0.35s ease;
+    }
+
+    /* Сбалансированный кадр: голова папы сверху и номер авто снизу */
+    .art-box {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid rgba(101, 67, 33, 0.38);
+      background: #1c140d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .art-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 66%;
+      display: block;
+    }
+
+    .art-placeholder {
+      padding: 12px;
+      text-align: center;
+      color: #fde68a;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .wish-heading {
+      margin: 0 0 8px;
+      font-size: clamp(19px, 3.6vh, 30px);
+      font-weight: 700;
+      line-height: 1.15;
+      color: #26170b;
+    }
+
+    .wish-body {
+      margin: 0;
+      font-size: clamp(14.5px, 2.55vh, 21px);
+      font-weight: 400;
+      line-height: 1.42;
+      color: #362212;
+      white-space: pre-line;
+      overflow-y: auto;
+    }
+
+    .wish-footer {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(92, 61, 30, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .wish-sign {
+      font-style: italic;
+      font-size: clamp(14px, 2.4vh, 19px);
+      font-weight: 700;
+      color: #4d3017;
+    }
+
+    .btn-close-book {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      border: none;
+      border-radius: 10px;
+      padding: 7px 13px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+      box-shadow: 0 6px 14px rgba(153, 27, 27, 0.35);
+      cursor: pointer;
+    }
+
+    .btn-close-book:active {
+      transform: scale(0.97);
+    }
+
+    .turning-leaf {
+      position: absolute;
+      top: clamp(8px, 1.4vh, 14px);
+      bottom: clamp(8px, 1.4vh, 14px);
+      left: 50%;
+      width: calc(50% - clamp(8px, 1.4vh, 14px));
+      transform-origin: left center;
+      transform-style: preserve-3d;
+      border-radius: 0 10px 10px 0;
+      background: radial-gradient(circle at top, #fbf2de, #e7d3b0);
+      border: 1.5px solid rgba(110, 74, 38, 0.32);
+      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
+      z-index: 12;
+      opacity: 0;
+      transform: rotateY(0deg);
+      pointer-events: none;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 5px;
+      overflow: hidden;
+      transition: transform 0.26s cubic-bezier(0.32, 0.72, 0.35, 1),
+                  opacity 0.14s ease;
+    }
+
+    .turning-leaf .line-bar {
+      height: 3px;
+      background: rgba(66, 42, 20, 0.32);
+    }
+
+    .stage3-scene.leaf-turning .turning-leaf {
+      opacity: 1;
+      transform: rotateY(-174deg);
+    }
+
+    /* Правая часть после закрытия книги влево — крупная финальная надпись «С новым годом!» */
+    .finale-right-greeting {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 54vw;
+      height: 100dvh;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px clamp(16px, 3vw, 48px);
+      text-align: center;
+      opacity: 0;
+      transform: translate3d(28px, 0, 0) scale(0.97);
+      pointer-events: none;
+      transition: opacity 0.85s ease 0.55s,
+                  transform 0.95s cubic-bezier(0.22, 0.78, 0.25, 1) 0.55s;
+    }
+
+    .stage3-scene.closed-left .finale-right-greeting {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    .ny-banner {
+      font-family: "Rubik Bubbles", "Comic Sans MS", cursive, sans-serif;
+      font-size: clamp(46px, 10.5vh, 106px);
+      line-height: 1.03;
+      letter-spacing: 0.02em;
+      color: #fde047;
+      -webkit-text-stroke: 2.5px #7f1d1d;
+      text-shadow:
+        0 7px 0 #991b1b,
+        0 14px 30px rgba(0, 0, 0, 0.85);
+      user-select: none;
+    }
+
+    .ny-sub {
+      margin-top: 14px;
+      font-size: clamp(15px, 2.6vh, 23px);
+      font-weight: 600;
+      color: #fef3c7;
+      text-shadow: 0 3px 12px rgba(0, 0, 0, 0.85);
+      opacity: 0.96;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper-overlay" id="wrapperOverlay">
+    <div class="bokeh-layer" aria-hidden="true">
+      <span class="bokeh-orb bokeh-orb--gold-1"></span>
+      <span class="bokeh-orb bokeh-orb--red-1"></span>
+      <span class="bokeh-orb bokeh-orb--green-1"></span>
+      <span class="bokeh-orb bokeh-orb--gold-2"></span>
+      <span class="bokeh-orb bokeh-orb--warm-1"></span>
+      <span class="bokeh-orb bokeh-orb--warm-2"></span>
+    </div>
+
+    <div class="gift-box">
+      <div class="gift-tag">🎁 Запакованный подарок</div>
+      <h1 class="gift-title">Внутри кое-что ждёт</h1>
+      <p class="gift-sub">Перед просмотром переверните телефон в горизонтальное положение</p>
+      <button type="button" class="btn-unwrap" id="unwrapBtn">Снять обёртку</button>
+    </div>
+  </div>
+
+  <div class="transition-video-overlay" id="transitionVideoOverlay" aria-hidden="true">
+    <video
+      class="transition-video"
+      id="transitionVideo"
+      playsinline
+      webkit-playsinline
+      muted
+      preload="auto"
+    ></video>
+  </div>
+
+  <img
+    class="bg-photo"
+    id="bgPhoto"
+    src="bg-car.jpg"
+    alt=""
+  />
+
+  <div class="bg-overlay" id="bgOverlay"></div>
+  <div class="snow-layer" id="snowLayer"></div>
+
+  <main class="card" id="mainCard">
+    <section class="screen active" id="stage1Screen">
+      <div class="badge">🎄 Этап 1 • Тест-драйв настроения</div>
+      <div class="q-counter" id="qCounter">Вопрос 1 из 3</div>
+      <h2 id="qText">Загрузка вопроса...</h2>
+      <div class="choices" id="choices"></div>
+      <div class="note" id="noteText"></div>
+    </section>
+
+    <section class="screen" id="startDoneScreen">
+      <div class="badge">✨ Готово</div>
+      <h2>Стартовый круг позади!</h2>
+      <p>Тачка набрала ход — самое время сменить обстановку и заглянуть в один старый кадр.</p>
+      <button class="btn-next" id="goToPhotoGameBtn">Погнали дальше →</button>
+    </section>
+  </main>
+
+  <div class="stage2-container" id="stage2Container">
+    <div class="collage-bg" id="collageBg" aria-hidden="true"></div>
+
+    <div class="stage2-layout">
+      <div class="stage2-info">
+        <div class="stage2-header">
+          <div class="stage2-badge">🎞️ Этап 2 • Архивный стол</div>
+          <div class="found-counter" id="foundCounter">Найдено: 0 из 5</div>
+        </div>
+        <h2 class="stage2-title">Найди 5 новогодних мелочей, которых там не было 🎄</h2>
+
+        <div class="stage2-footer">
+          <div class="stage2-status" id="stage2Status"></div>
+          <button type="button" class="btn-reset" id="resetBtn">Сбросить</button>
+        </div>
+
+        <div class="stage2-complete" id="stage2Complete">
+          <p class="stage2-text" style="margin-bottom: 8px; color: #fde68a;">Маленький архивный сюрприз позади 🎄</p>
+          <div class="complete-actions">
+            <button type="button" class="btn-continue" id="continueBtn">Дальше →</button>
+            <button type="button" class="btn-replay" id="replayVideoBtn">Смотреть ещё раз</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="archive-stage" id="archiveStage">
+        <div class="archive-placeholder" id="archivePlaceholder">
+          <strong>Вертикальный кадр</strong>
+          <span>Укажи photoSrc и cleanPhotoSrc в stage2Config</span>
+        </div>
+        <img class="archive-photo" id="archivePhoto" alt="Снимок с деталями" style="display: none;" />
+        <canvas class="patch-canvas" id="patchCanvas"></canvas>
+        <video
+          class="alive-video"
+          id="aliveVideo"
+          playsinline
+          webkit-playsinline
+          muted
+          preload="auto"
+        ></video>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ЭТАП 3 — ФИНАЛЬНАЯ КНИГА ==================== -->
+  <div class="stage3-scene" id="stage3Scene">
+    <div class="bg-layer" aria-hidden="true"></div>
+    <div class="bg-scrim" aria-hidden="true"></div>
+    <canvas class="fireworks-canvas" id="fireworksCanvas" aria-hidden="true"></canvas>
+
+    <div class="book-dock" id="bookDock">
+      <div class="book-shell" id="bookShell">
+        <div class="shrek-cover" id="shrekCover">
+          <div class="cover-ornament" aria-hidden="true">
+            <div class="ornament-frame"></div>
+            <div class="corner-filigree corner-tl"></div>
+            <div class="corner-filigree corner-tr"></div>
+            <div class="corner-filigree corner-bl"></div>
+            <div class="corner-filigree corner-br"></div>
+            <div class="edge-scroll-top">❀ • ✦ • ❀ • ✦ • ❀</div>
+            <div class="edge-scroll-bottom">❀ • ✦ • ❀ • ✦ • ❀</div>
+            <div class="side-vine-left">
+              <span>✦</span><span>❀</span><span>✦</span><span>❀</span><span>✦</span>
+            </div>
+            <div class="side-vine-right">
+              <span>✦</span><span>❀</span><span>✦</span><span>❀</span><span>✦</span>
+            </div>
+          </div>
+
+          <div class="cover-details" id="coverDetails">
+            <div class="cover-spacer" aria-hidden="true"></div>
+            <div class="family-hero">
+              <div class="family-word-wrap">
+                <span class="family-word">FAMIL</span><span class="family-word santa-hat">Y<span class="santa-cap" aria-hidden="true"><span class="santa-cap-cone"></span><span class="santa-cap-tail"></span><span class="santa-cap-trim"></span><span class="santa-cap-pom"></span></span></span>
+              </div>
+              <div class="snow-drift" aria-hidden="true"></div>
+            </div>
+            <button type="button" class="btn-open-book" id="openBookBtn">Открыть книгу →</button>
+          </div>
+        </div>
+
+        <div class="open-spread" id="openSpread">
+          <div class="page page-left">
+            <div class="page-content">
+              <div class="art-box">
+                <img class="art-img" id="artImg" alt="Иллюстрация в стиле Шрека" style="display: none;" />
+                <div class="art-placeholder" id="artPlaceholder">
+                  Положи сюда картинку <code>shrek_wish.jpg</code> в папку с этим файлом.
+                </div>
+              </div>
+            </div>
+            <div class="page-lines" id="linesLeft" aria-hidden="true"></div>
+          </div>
+
+          <div class="page page-right">
+            <div class="page-content">
+              <div>
+                <h2 class="wish-heading" id="wishHeading">С Новым годом, пап! 🎄</h2>
+                <p class="wish-body" id="wishBody"></p>
+              </div>
+              <div class="wish-footer">
+                <span class="wish-sign" id="wishSign">С теплом и любовью 🎄</span>
+                <button type="button" class="btn-close-book" id="closeBookBtn">Закрыть книгу</button>
+              </div>
+            </div>
+            <div class="page-lines" id="linesRight" aria-hidden="true"></div>
+          </div>
+
+          <div class="turning-leaf" id="turningLeaf" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="finale-right-greeting" id="finaleRightGreeting">
+      <div class="ny-banner">С НОВЫМ<br>ГОДОМ!</div>
+      <div class="ny-sub">Пусть год будет тёплым и добрым 🎄</div>
+    </div>
+  </div>
+
+  <script>
+    const transitionVideoSrc = "car_transition.mp4";
+
+    const wrapperOverlay = document.getElementById("wrapperOverlay");
+    const unwrapBtn = document.getElementById("unwrapBtn");
+
+    unwrapBtn.addEventListener("click", () => {
+      unwrapBtn.disabled = true;
+      wrapperOverlay.classList.add("unwrapped");
+      setTimeout(() => {
+        wrapperOverlay.style.display = "none";
+      }, 2950);
+    });
+
+    const bgPhoto = document.getElementById("bgPhoto");
+    const candidates = ["bg-car.jpg", "bg-car.jpeg", "bg-car.png", "bg-car.webp", "bg-car.jpg.jpg"];
+    let candidateIndex = 0;
+
+    bgPhoto.addEventListener("error", () => {
+      candidateIndex++;
+      if (candidateIndex < candidates.length) {
+        bgPhoto.src = candidates[candidateIndex];
+      } else {
+        bgPhoto.style.display = "none";
+      }
+    });
+
+    const snowLayer = document.getElementById("snowLayer");
+    const isNarrow = window.innerWidth <= 640;
+    const flakeCount = isNarrow ? 22 : 36;
+
+    for (let i = 0; i < flakeCount; i++) {
+      const flake = document.createElement("span");
+      flake.className = "flake";
+      const size = 2 + Math.random() * 3.5;
+      flake.style.width = size + "px";
+      flake.style.height = size + "px";
+      flake.style.left = Math.random() * 100 + "%";
+      flake.style.animationDuration = (5.5 + Math.random() * 6.5) + "s";
+      flake.style.animationDelay = (-Math.random() * 10) + "s";
+      flake.style.opacity = (0.35 + Math.random() * 0.55).toFixed(2);
+      snowLayer.appendChild(flake);
+    }
+
+    const questions = [
+      {
+        text: "Как настроение перед праздником? Готов к сюрпризу?",
+        options: [
+          { label: "На максимуме!", nextMsg: "Вот это настрой! Тогда не тянем." },
+          { label: "Вроде да, посмотрим, что там", nextMsg: "Принято, потихоньку вкатываемся." }
+        ],
+        dodge: {
+          label: "Не готов, давай без этого",
+          phrases: ["Не готов, давай без этого", "Мимо!", "Кнопка ушла в дрифт", "Не-а, жми другой вариант"]
+        }
+      },
+      {
+        text: "Олени сегодня отдыхают — как думаешь, наша новогодняя упряжка справится?",
+        options: [
+          { label: "С гирляндой и ёлкой на крыше — вообще легко", nextMsg: "Атмосфера на максимуме, по сугробам пойдёт уверенно." },
+          { label: "Смотря кто за рулём и насколько скользко", nextMsg: "Справедливо, держим руль крепче и смотрим в оба!" }
+        ],
+        dodge: {
+          label: "Посчитаю сам после каникул",
+          phrases: ["Посчитаю сам после каникул", "Убежала за оленями", "Попробуй поймать", "Ну жми нормальный ответ!"]
+        }
+      },
+      {
+        text: "Готов заглянуть в старый архив и навести там порядок?",
+        options: [
+          { label: "Конечно, мне уже любопытно", nextMsg: "Загружаю, смотри внимательно!" },
+          { label: "Погнали, интересно посмотреть", nextMsg: "Поехали, сейчас всё увидишь!" }
+        ],
+        dodge: {
+          label: "Может, лучше сразу к подарку?",
+          phrases: ["Может, лучше сразу к подарку?", "Сначала — разминка!", "Кнопка не согласна", "Давай по порядку 😉"]
+        }
+      }
+    ];
+
+    let idx = 0;
+    let dodgeIdx = 0;
+    let isTransitioning = false;
+
+    const qCounter = document.getElementById("qCounter");
+    const qText = document.getElementById("qText");
+    const choicesEl = document.getElementById("choices");
+    const noteText = document.getElementById("noteText");
+
+    const stage1Screen = document.getElementById("stage1Screen");
+    const startDoneScreen = document.getElementById("startDoneScreen");
+    const goToPhotoGameBtn = document.getElementById("goToPhotoGameBtn");
+
+    const transitionVideoOverlay = document.getElementById("transitionVideoOverlay");
+    const transitionVideo = document.getElementById("transitionVideo");
+
+    if (transitionVideoSrc) {
+      transitionVideo.src = transitionVideoSrc;
+      transitionVideo.load();
+    }
+
+    function showScreen(targetScreen) {
+      [stage1Screen, startDoneScreen].forEach((s) => s.classList.remove("active"));
+      targetScreen.classList.add("active");
+    }
+
+    function renderQuestion() {
+      isTransitioning = false;
+      const q = questions[idx];
+      qCounter.textContent = `Вопрос ${idx + 1} из ${questions.length}`;
+      qText.textContent = q.text;
+      noteText.textContent = "";
+      noteText.classList.remove("visible");
+      choicesEl.innerHTML = "";
+      dodgeIdx = 0;
+
+      q.options.forEach((opt) => {
+        const btn = document.createElement("button");
+        btn.className = "btn-option";
+        btn.textContent = opt.label;
+        btn.addEventListener("click", () => {
+          if (isTransitioning) return;
+          isTransitioning = true;
+
+          choicesEl.querySelectorAll("button").forEach((b) => {
+            b.disabled = true;
+          });
+
+          noteText.textContent = opt.nextMsg;
+          noteText.classList.add("visible");
+
+          setTimeout(() => {
+            idx++;
+            if (idx < questions.length) {
+              renderQuestion();
+            } else {
+              showScreen(startDoneScreen);
+            }
+          }, 2200);
+        });
+        choicesEl.appendChild(btn);
+      });
+
+      if (q.dodge) {
+        const dodgeBtn = document.createElement("button");
+        dodgeBtn.className = "btn-dodge";
+        dodgeBtn.textContent = q.dodge.label;
+
+        const moveDodge = (e) => {
+          if (isTransitioning) return;
+          if (e && e.type === "touchstart") e.preventDefault();
+          dodgeBtn.style.position = "absolute";
+          const maxX = Math.max(8, choicesEl.clientWidth - dodgeBtn.offsetWidth - 8);
+          const maxY = Math.max(8, choicesEl.clientHeight - dodgeBtn.offsetHeight - 8);
+          dodgeBtn.style.left = Math.floor(Math.random() * maxX) + "px";
+          dodgeBtn.style.top = Math.floor(Math.random() * maxY) + "px";
+          dodgeIdx = (dodgeIdx + 1) % q.dodge.phrases.length;
+          dodgeBtn.textContent = q.dodge.phrases[dodgeIdx];
+        };
+
+        dodgeBtn.addEventListener("mouseenter", moveDodge);
+        dodgeBtn.addEventListener("touchstart", moveDodge, { passive: false });
+        dodgeBtn.addEventListener("click", moveDodge);
+        choicesEl.appendChild(dodgeBtn);
+      }
+    }
+
+    /* ==================== ЛОГИКА ЭТАПА 2 ==================== */
+    const stage2Config = {
+      photoSrc: "1P_2.jpg",
+      cleanPhotoSrc: "1P.jpg",
+      aliveVideoSrc: "1P_alive.mp4",
+      videoDelayMs: 1400,
+      nextStageUrl: "",
+      collagePhotos: ["bg1.jpg", "bg2.jpg", "bg3.jpg", "bg4.jpg"],
+      collageCount: 72,
+      spots: [
+        { id: "ball", label: "красный ёлочный шарик", x: 47, y: 9, rx: 24, ry: 28 },
+        { id: "snowflake", label: "снежинку на ковре", x: 68, y: 18, rx: 30, ry: 30 },
+        { id: "tangerine", label: "мандарин на обоях", x: 2, y: 42, rx: 28, ry: 26 },
+        { id: "gift", label: "подарочную коробочку", x: 96, y: 56, rx: 30, ry: 26 },
+        { id: "bell", label: "золотой колокольчик", x: 61, y: 95, rx: 28, ry: 26 }
+      ]
+    };
+
+    const collageBg = document.getElementById("collageBg");
+    const archiveStage = document.getElementById("archiveStage");
+    const archivePlaceholder = document.getElementById("archivePlaceholder");
+    const archivePhoto = document.getElementById("archivePhoto");
+    const patchCanvas = document.getElementById("patchCanvas");
+    const aliveVideo = document.getElementById("aliveVideo");
+    const foundCounter = document.getElementById("foundCounter");
+    const stage2Status = document.getElementById("stage2Status");
+    const resetBtn = document.getElementById("resetBtn");
+    const stage2Complete = document.getElementById("stage2Complete");
+    const continueBtn = document.getElementById("continueBtn");
+    const replayVideoBtn = document.getElementById("replayVideoBtn");
+
+    const foundIds = new Set();
+    const cleanImg = new Image();
+    let cleanImgLoaded = false;
+    let videoTriggered = false;
+    let videoDelayTimer = null;
+    let stage2Initialized = false;
+
+    cleanImg.onload = () => {
+      cleanImgLoaded = true;
+      redrawPatches();
+    };
+    if (stage2Config.cleanPhotoSrc) {
+      cleanImg.src = stage2Config.cleanPhotoSrc;
+    }
+
+    if (stage2Config.aliveVideoSrc) {
+      aliveVideo.src = stage2Config.aliveVideoSrc;
+    }
+
+    function clearVideoDelayTimer() {
+      if (videoDelayTimer !== null) {
+        clearTimeout(videoDelayTimer);
+        videoDelayTimer = null;
+      }
+    }
+
+    function getCoverCrop(imgW, imgH, boxW, boxH) {
+      const imgRatio = imgW / imgH;
+      const boxRatio = boxW / boxH;
+      let sx = 0;
+      let sy = 0;
+      let sw = imgW;
+      let sh = imgH;
+
+      if (imgRatio > boxRatio) {
+        sw = imgH * boxRatio;
+        sx = (imgW - sw) / 2;
+      } else {
+        sh = imgW / boxRatio;
+        sy = (imgH - sh) / 2;
+      }
+      return { sx, sy, sw, sh };
+    }
+
+    function redrawPatches() {
+      const rect = archiveStage.getBoundingClientRect();
+      const w = Math.round(rect.width);
+      const h = Math.round(rect.height);
+      if (!w || !h) return;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      patchCanvas.width = w * dpr;
+      patchCanvas.height = h * dpr;
+
+      const ctx = patchCanvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+
+      if (!cleanImgLoaded || foundIds.size === 0) return;
+
+      const crop = getCoverCrop(cleanImg.naturalWidth, cleanImg.naturalHeight, w, h);
+
+      stage2Config.spots.forEach((spot) => {
+        if (!foundIds.has(spot.id)) return;
+
+        const cx = (spot.x / 100) * w;
+        const cy = (spot.y / 100) * h;
+        const rx = spot.rx || 26;
+        const ry = spot.ry || 26;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.clip();
+
+        ctx.drawImage(
+          cleanImg,
+          crop.sx,
+          crop.sy,
+          crop.sw,
+          crop.sh,
+          0,
+          0,
+          w,
+          h
+        );
+
+        const grad = ctx.createRadialGradient(
+          cx,
+          cy,
+          Math.min(rx, ry) * 0.45,
+          cx,
+          cy,
+          Math.max(rx, ry) * 1.05
+        );
+        grad.addColorStop(0, "rgba(0,0,0,0)");
+        grad.addColorStop(1, "rgba(17,13,11,0.22)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(cx - rx * 1.2, cy - ry * 1.2, rx * 2.4, ry * 2.4);
+
+        ctx.restore();
+      });
+    }
+
+    function playAliveVideo() {
+      clearVideoDelayTimer();
+
+      if (!stage2Config.aliveVideoSrc) {
+        stage2Complete.classList.add("visible");
+        return;
+      }
+
+      archiveStage.classList.add("video-playing");
+      stage2Complete.classList.remove("visible");
+      aliveVideo.currentTime = 0;
+
+      const playPromise = aliveVideo.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {
+          aliveVideo.controls = true;
+        });
+      }
+    }
+
+    function seededRand(seed) {
+      const x = Math.sin(seed * 9301 + 49297) * 233280;
+      return x - Math.floor(x);
+    }
+
+    function renderCollage() {
+      collageBg.innerHTML = "";
+      const validPhotos = (stage2Config.collagePhotos || []).filter(Boolean);
+      if (validPhotos.length === 0) return;
+
+      const total = stage2Config.collageCount || 72;
+      const cols = 9;
+      const rows = Math.ceil(total / cols);
+
+      for (let i = 0; i < total; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+
+        const cellW = 100 / cols;
+        const cellH = 100 / rows;
+
+        const jitterX = (seededRand(i * 11 + 1) - 0.5) * cellW * 0.56;
+        const jitterY = (seededRand(i * 17 + 2) - 0.5) * cellH * 0.56;
+
+        const left = Math.min(99, Math.max(1, (col + 0.5) * cellW + jitterX));
+        const top = Math.min(99, Math.max(1, (row + 0.5) * cellH + jitterY));
+
+        const rot = ((seededRand(i * 23 + 3) - 0.5) * 34).toFixed(1) + "deg";
+        const scaleMin = 126 + Math.floor(seededRand(i * 29 + 4) * 56);
+        const scaleMax = 188 + Math.floor(seededRand(i * 31 + 5) * 76);
+        const src = validPhotos[i % validPhotos.length];
+
+        const tile = document.createElement("div");
+        tile.className = "collage-tile";
+        tile.style.left = left.toFixed(1) + "%";
+        tile.style.top = top.toFixed(1) + "%";
+        tile.style.setProperty("--rot", rot);
+        tile.style.setProperty("--w", `clamp(${scaleMin}px, 21vw, ${scaleMax}px)`);
+
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = "";
+        img.loading = "lazy";
+
+        tile.appendChild(img);
+        collageBg.appendChild(tile);
+      }
+    }
+
+    function renderHotspots() {
+      archiveStage.querySelectorAll(".hotspot").forEach((el) => el.remove());
+
+      stage2Config.spots.forEach((spot) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "hotspot";
+        btn.style.left = spot.x + "%";
+        btn.style.top = spot.y + "%";
+        btn.setAttribute("aria-label", spot.label || "Деталь");
+
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (foundIds.has(spot.id) || videoTriggered) return;
+
+          foundIds.add(spot.id);
+          btn.classList.add("found");
+          redrawPatches();
+          foundCounter.textContent = `Найдено: ${foundIds.size} из ${stage2Config.spots.length}`;
+
+          if (foundIds.size >= stage2Config.spots.length) {
+            videoTriggered = true;
+            stage2Status.textContent = "Все 5 деталей убраны!";
+            clearVideoDelayTimer();
+            videoDelayTimer = setTimeout(() => {
+              playAliveVideo();
+            }, stage2Config.videoDelayMs);
+          } else {
+            stage2Status.textContent = `Убрано: ${spot.label}!`;
+          }
+        });
+
+        archiveStage.appendChild(btn);
+      });
+    }
+
+    function resetStage2() {
+      clearVideoDelayTimer();
+      foundIds.clear();
+      videoTriggered = false;
+      archiveStage.classList.remove("video-playing");
+      stage2Complete.classList.remove("visible");
+      aliveVideo.controls = false;
+      aliveVideo.pause();
+      try {
+        aliveVideo.currentTime = 0;
+      } catch (_) {}
+
+      redrawPatches();
+      foundCounter.textContent = `Найдено: 0 из ${stage2Config.spots.length}`;
+      stage2Status.textContent = "";
+      renderHotspots();
+    }
+
+    aliveVideo.addEventListener("ended", () => {
+      stage2Status.textContent = "Момент пойман — идём дальше ✨";
+      stage2Complete.classList.add("visible");
+    });
+
+    aliveVideo.addEventListener("error", () => {
+      stage2Status.textContent = "Не удалось загрузить видеофайл — проверь имя в aliveVideoSrc.";
+      stage2Complete.classList.add("visible");
+    });
+
+    replayVideoBtn.addEventListener("click", () => {
+      stage2Status.textContent = "Смотрим ролик ещё раз...";
+      playAliveVideo();
+    });
+
+    function initStage2() {
+      if (!stage2Initialized) {
+        stage2Initialized = true;
+        renderCollage();
+
+        if (stage2Config.photoSrc) {
+          archivePhoto.src = stage2Config.photoSrc;
+          archivePhoto.style.display = "block";
+          archivePlaceholder.style.display = "none";
+        }
+
+        archiveStage.addEventListener("click", () => {
+          if (!videoTriggered && foundIds.size < stage2Config.spots.length) {
+            stage2Status.textContent = "Мимо — присмотрись к коврам, обоям, покрывалу и штанам.";
+          }
+        });
+
+        resetBtn.addEventListener("click", resetStage2);
+        window.addEventListener("resize", redrawPatches);
+        renderHotspots();
+      }
+      requestAnimationFrame(redrawPatches);
+    }
+
+    /* ==================== БЕСШОВНЫЙ ВХОД И ПЛАВНЫЙ ВЫХОД НА ЭТАП 2 ==================== */
+    let isDeparting = false;
+    let stage2Opened = false;
+
+    function finishTransitionToStage2() {
+      if (stage2Opened) return;
+      stage2Opened = true;
+
+      document.body.classList.remove("card-exiting-up", "video-seamless");
+      document.body.classList.add("stage2-active");
+      initStage2();
+
+      requestAnimationFrame(() => {
+        transitionVideoOverlay.classList.add("receding");
+      });
+
+      setTimeout(() => {
+        transitionVideoOverlay.classList.remove("active-video", "receding");
+        transitionVideoOverlay.style.display = "none";
+        try {
+          transitionVideo.pause();
+        } catch (_) {}
+      }, 960);
+    }
+
+    function swapBackgroundToVideo() {
+      if (!transitionVideoSrc) {
+        finishTransitionToStage2();
+        return;
+      }
+
+      try {
+        transitionVideo.currentTime = 0;
+      } catch (_) {}
+
+      const revealVideo = () => {
+        transitionVideoOverlay.classList.add("active-video");
+        document.body.classList.add("video-seamless");
+      };
+
+      const playPromise = transitionVideo.play();
+      if (playPromise && typeof playPromise.then === "function") {
+        playPromise.then(() => {
+          requestAnimationFrame(revealVideo);
+        }).catch(() => {
+          revealVideo();
+          setTimeout(finishTransitionToStage2, 600);
+        });
+      } else {
+        revealVideo();
+      }
+    }
+
+    transitionVideo.addEventListener("ended", finishTransitionToStage2);
+    transitionVideo.addEventListener("error", () => {
+      setTimeout(finishTransitionToStage2, 400);
+    });
+
+    goToPhotoGameBtn.addEventListener("click", () => {
+      if (isDeparting) return;
+      isDeparting = true;
+      goToPhotoGameBtn.disabled = true;
+
+      document.body.classList.add("card-exiting-up");
+
+      setTimeout(() => {
+        swapBackgroundToVideo();
+      }, 620);
+    });
+
+    /* ==================== ЛОГИКА ЭТАПА 3 — ФИНАЛЬНАЯ КНИГА ==================== */
+    const stage3Config = {
+      backgroundImage: "home_tree_bg.jpg",
+      leftImage: "shrek_wish.jpg",
+      heading: "С Новым годом, пап! 🎄",
+      wishText: "Пусть в новом году будет поменьше суеты и поломок, а побольше добрых встреч, спокойных вечеров и поводов для улыбки 😊 Как говорили в «Клане Сопрано»: «Я горжусь тем, что я сын Джонни Сопрано» — а я с гордостью скажу, что я твой сын! Я тебя ошн ошн сильно люблю, пап ❤️ Спасибо за твою поддержку, опыт и всё, что ты делаешь. Пусть новый год будет удачным во всём! ✨",
+      signature: "С теплом и любовью 🎄"
+    };
+
+    const stage3Scene = document.getElementById("stage3Scene");
+    const bgLayer = document.querySelector(".bg-layer");
+    const bookShell = document.getElementById("bookShell");
+    const openBookBtn = document.getElementById("openBookBtn");
+    const closeBookBtn = document.getElementById("closeBookBtn");
+    const artImg = document.getElementById("artImg");
+    const artPlaceholder = document.getElementById("artPlaceholder");
+    const wishHeading = document.getElementById("wishHeading");
+    const wishBody = document.getElementById("wishBody");
+    const wishSign = document.getElementById("wishSign");
+
+    const linesLeft = document.getElementById("linesLeft");
+    const linesRight = document.getElementById("linesRight");
+    const turningLeaf = document.getElementById("turningLeaf");
+
+    if (stage3Config.backgroundImage && bgLayer) {
+      bgLayer.style.backgroundImage = `url("${stage3Config.backgroundImage}")`;
+    }
+
+    wishHeading.textContent = stage3Config.heading;
+    wishBody.textContent = stage3Config.wishText;
+    wishSign.textContent = stage3Config.signature;
+
+    function buildPageLines(container, count, seedOffset) {
+      container.innerHTML = "";
+      for (let i = 0; i < count; i++) {
+        const bar = document.createElement("div");
+        bar.className = "line-bar";
+        const pseudoRandom = Math.abs(Math.sin((i + 1) * 12.9898 + seedOffset * 78.233));
+        const isShortEnd = (i + seedOffset) % 7 === 0;
+        const widthPct = isShortEnd
+          ? 42 + Math.floor(pseudoRandom * 34)
+          : 82 + Math.floor(pseudoRandom * 18);
+        bar.style.width = widthPct + "%";
+        if ((i + seedOffset) % 8 === 0) {
+          bar.classList.add("gap-after");
+        }
+        container.appendChild(bar);
+      }
+    }
+
+    buildPageLines(linesLeft, 24, 1);
+    buildPageLines(linesRight, 24, 2);
+    buildPageLines(turningLeaf, 22, 3);
+
+    if (stage3Config.leftImage) {
+      artImg.onload = () => {
+        artImg.style.display = "block";
+        artPlaceholder.style.display = "none";
+      };
+      artImg.onerror = () => {
+        artImg.style.display = "none";
+        artPlaceholder.style.display = "block";
+      };
+      artImg.src = stage3Config.leftImage;
+    }
+
+    /* Пышный салют без shadowBlur, с мягкой вспышкой и контролем числа искр */
+    const fwCanvas = document.getElementById("fireworksCanvas");
+    const fwCtx = fwCanvas ? fwCanvas.getContext("2d") : null;
+    const MAX_SPARKS = 240;
+    let sparks = [];
+    let flashes = [];
+    let fwActive = false;
+    let fwLaunchTimer = null;
+    let fwRafId = null;
+
+    function resizeFireworks() {
+      if (!fwCanvas) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      fwCanvas.width = Math.max(1, Math.floor(fwCanvas.clientWidth * dpr));
+      fwCanvas.height = Math.max(1, Math.floor(fwCanvas.clientHeight * dpr));
+      if (fwCtx) {
+        fwCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+    }
+
+    function createBurstAt(cx, cy, color, count, baseSpeed, gravityScale = 1, drag = 0.982) {
+      const available = MAX_SPARKS - sparks.length;
+      if (available <= 0) return;
+      const actualCount = Math.min(count, available);
+
+      flashes.push({
+        x: cx,
+        y: cy,
+        radius: 14 + Math.random() * 10,
+        alpha: 0.42,
+        color
+      });
+
+      for (let i = 0; i < actualCount; i++) {
+        const angle = (Math.PI * 2 * i) / actualCount + (Math.random() - 0.5) * 0.28;
+        const speed = baseSpeed * (0.58 + Math.random() * 0.72);
+        sparks.push({
+          x: cx,
+          y: cy,
+          prevX: cx,
+          prevY: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          alpha: 1,
+          decay: 0.025 + Math.random() * 0.015,
+          color,
+          size: 1.9 + Math.random() * 1.7,
+          gravity: 0.055 * gravityScale,
+          drag
+        });
+      }
+    }
+
+    function spawnBurst() {
+      if (!fwCanvas || !fwActive || document.hidden) return;
+      const w = fwCanvas.clientWidth || 440;
+      const h = fwCanvas.clientHeight || 540;
+      const palette = ["#fde047", "#bef264", "#fb7185", "#38bdf8", "#fb923c", "#fef08a"];
+
+      const cx1 = w * (0.14 + Math.random() * 0.72);
+      const cy1 = h * (0.12 + Math.random() * 0.56);
+      const color1 = palette[Math.floor(Math.random() * palette.length)];
+      const isRain = Math.random() < 0.35;
+
+      if (isRain) {
+        createBurstAt(cx1, cy1, color1, 24, 1.9, 1.35, 0.975);
+      } else {
+        createBurstAt(cx1, cy1, color1, 28, 2.55, 1, 0.982);
+      }
+
+      if (Math.random() < 0.52 && sparks.length < MAX_SPARKS - 20) {
+        const cx2 = w * (0.18 + Math.random() * 0.64);
+        const cy2 = h * (0.16 + Math.random() * 0.54);
+        const color2 = palette[Math.floor(Math.random() * palette.length)];
+        createBurstAt(cx2, cy2, color2, 20, 2.15, 1, 0.982);
+      }
+    }
+
+    function tickFireworks() {
+      if (!fwCtx || !fwCanvas) return;
+      const w = fwCanvas.clientWidth;
+      const h = fwCanvas.clientHeight;
+      fwCtx.clearRect(0, 0, w, h);
+
+      for (let i = flashes.length - 1; i >= 0; i--) {
+        const f = flashes[i];
+        f.radius += 1.4;
+        f.alpha -= 0.045;
+        if (f.alpha <= 0) {
+          flashes.splice(i, 1);
+          continue;
+        }
+        fwCtx.globalAlpha = Math.max(0, f.alpha);
+        fwCtx.fillStyle = f.color;
+        fwCtx.beginPath();
+        fwCtx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+        fwCtx.fill();
+      }
+
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        s.prevX = s.x;
+        s.prevY = s.y;
+        s.x += s.vx;
+        s.y += s.vy;
+        s.vy += s.gravity;
+        s.vx *= s.drag;
+        s.alpha -= s.decay;
+
+        if (s.alpha <= 0) {
+          sparks.splice(i, 1);
+          continue;
+        }
+
+        const a = Math.max(0, s.alpha);
+        fwCtx.globalAlpha = a * 0.78;
+        fwCtx.strokeStyle = s.color;
+        fwCtx.lineWidth = s.size * 0.85;
+        fwCtx.lineCap = "round";
+        fwCtx.beginPath();
+        fwCtx.moveTo(s.prevX, s.prevY);
+        fwCtx.lineTo(s.x, s.y);
+        fwCtx.stroke();
+
+        fwCtx.globalAlpha = a;
+        fwCtx.fillStyle = s.color;
+        fwCtx.beginPath();
+        fwCtx.arc(s.x, s.y, s.size * 0.72, 0, Math.PI * 2);
+        fwCtx.fill();
+      }
+      fwCtx.globalAlpha = 1;
+
+      if (!document.hidden && (fwActive || sparks.length > 0 || flashes.length > 0)) {
+        fwRafId = requestAnimationFrame(tickFireworks);
+      } else {
+        fwRafId = null;
+      }
+    }
+
+    function startFireworks() {
+      resizeFireworks();
+      fwActive = true;
+      clearInterval(fwLaunchTimer);
+      spawnBurst();
+      fwLaunchTimer = setInterval(() => {
+        if (fwActive && !document.hidden) {
+          spawnBurst();
+        }
+      }, 480);
+      if (!fwRafId && !document.hidden) {
+        fwRafId = requestAnimationFrame(tickFireworks);
+      }
+    }
+
+    function stopFireworks() {
+      fwActive = false;
+      clearInterval(fwLaunchTimer);
+      sparks = [];
+      flashes = [];
+      if (fwCtx && fwCanvas) {
+        fwCtx.clearRect(0, 0, fwCanvas.clientWidth, fwCanvas.clientHeight);
+      }
+      if (fwRafId) {
+        cancelAnimationFrame(fwRafId);
+        fwRafId = null;
+      }
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        clearInterval(fwLaunchTimer);
+        if (fwRafId) {
+          cancelAnimationFrame(fwRafId);
+          fwRafId = null;
+        }
+      } else if (fwActive && !fwRafId) {
+        fwLaunchTimer = setInterval(() => {
+          if (fwActive && !document.hidden) spawnBurst();
+        }, 480);
+        fwRafId = requestAnimationFrame(tickFireworks);
+      }
+    });
+
+    window.addEventListener("resize", resizeFireworks);
+
+    let isBusy = false;
+    let isOpen = false;
+    let stepTimers = [];
+
+    function clearStepTimers() {
+      stepTimers.forEach((t) => clearTimeout(t));
+      stepTimers = [];
+    }
+
+    function flipSingleLeaf(delayMs, leafSeed) {
+      stepTimers.push(setTimeout(() => {
+        buildPageLines(turningLeaf, 22, leafSeed);
+        stage3Scene.classList.remove("leaf-turning");
+        void stage3Scene.offsetWidth;
+        stage3Scene.classList.add("leaf-turning", "has-left-leaf");
+      }, delayMs));
+
+      stepTimers.push(setTimeout(() => {
+        stage3Scene.classList.remove("leaf-turning");
+      }, delayMs + 240));
+    }
+
+    function openBookAndFlipToMiddle() {
+      if (isBusy || isOpen) return;
+      isBusy = true;
+      isOpen = true;
+      stopFireworks();
+      clearStepTimers();
+
+      stage3Scene.classList.remove("closed-left", "closing-fold", "leaf-turning", "has-left-leaf", "pages-sequence", "spread-visible");
+      stage3Scene.classList.add("opened", "cover-opening");
+
+      stepTimers.push(setTimeout(() => {
+        stage3Scene.classList.remove("cover-opening");
+        stage3Scene.classList.add("pages-sequence");
+      }, 820));
+
+      const flipOffsets = [950, 1210, 1470, 1730, 1990, 2250];
+      flipOffsets.forEach((ms, idx) => {
+        flipSingleLeaf(ms, idx + 4);
+      });
+
+      stepTimers.push(setTimeout(() => {
+        stage3Scene.classList.remove("pages-sequence", "leaf-turning");
+        stage3Scene.classList.add("spread-visible");
+        isBusy = false;
+      }, 2560));
+    }
+
+    function closeBookToLeft() {
+      if (isBusy || !isOpen) return;
+      isBusy = true;
+      isOpen = false;
+      clearStepTimers();
+
+      stage3Scene.classList.remove("cover-opening", "pages-sequence", "leaf-turning", "has-left-leaf", "spread-visible");
+      stage3Scene.classList.add("closing-fold");
+
+      setTimeout(() => {
+        stage3Scene.classList.remove("opened", "closing-fold");
+        stage3Scene.classList.add("closed-left");
+        startFireworks();
+        isBusy = false;
+      }, 720);
+    }
+
+    openBookBtn.addEventListener("click", openBookAndFlipToMiddle);
+    closeBookBtn.addEventListener("click", closeBookToLeft);
+
+    let touchStartX = null;
+    let touchStartY = null;
+
+    bookShell.addEventListener("touchstart", (e) => {
+      if (isOpen || !e.touches || e.touches.length === 0) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    bookShell.addEventListener("touchend", (e) => {
+      if (isOpen || touchStartX === null || !e.changedTouches || e.changedTouches.length === 0) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+      touchStartX = null;
+      touchStartY = null;
+
+      if (dx > 45 && dy < 90) {
+        openBookAndFlipToMiddle();
+      }
+    }, { passive: true });
+
+    function enterStage3() {
+      clearVideoDelayTimer();
+      try {
+        aliveVideo.pause();
+      } catch (_) {}
+
+      document.body.classList.remove("stage2-active", "card-exiting-up", "video-seamless");
+      document.body.classList.add("stage3-active");
+      requestAnimationFrame(resizeFireworks);
+    }
+
+    continueBtn.addEventListener("click", () => {
+      if (stage2Config.nextStageUrl) {
+        window.location.href = stage2Config.nextStageUrl;
+      } else {
+        enterStage3();
+      }
+    });
+
+    renderQuestion();
+  </script>
+</body>
+</html>
